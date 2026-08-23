@@ -22,7 +22,6 @@ public abstract class User {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    private PhoneVerification phoneVerification;
     private AuthenticationAccount authenticationAccount;
 
     private List<Address> addresses;

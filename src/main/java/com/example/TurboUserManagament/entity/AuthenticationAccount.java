@@ -21,6 +21,8 @@ public class AuthenticationAccount {
     private LocalDateTime updatedAt;
     private AccountStatus isActive;
 
+    private PhoneVerification phoneVerification;
+
     @Override
     public String toString() {
         return "AuthenticationAccount{" +
