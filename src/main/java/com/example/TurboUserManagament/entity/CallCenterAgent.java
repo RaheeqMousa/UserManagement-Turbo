@@ -13,4 +13,12 @@ import lombok.ToString;
 public class CallCenterAgent {
     private Long id;
     private User user;
+
+    @Override
+    public String toString() {
+        return "CallCenterAgent{" +
+                "id=" + id +
+                ", user=" + user +
+                '}';
+    }
 }

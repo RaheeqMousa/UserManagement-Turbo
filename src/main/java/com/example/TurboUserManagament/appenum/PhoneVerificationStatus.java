@@ -3,5 +3,6 @@ package com.example.TurboUserManagament.appenum;
 public enum PhoneVerificationStatus {
     PENDING,
     VERIFIED,
-    EXPIRED
+    EXPIRED,
+    ALREADY_VERIFIED
 }

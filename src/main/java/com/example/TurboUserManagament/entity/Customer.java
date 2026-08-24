@@ -1,10 +1,9 @@
 package com.example.TurboUserManagament.entity;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
-import lombok.ToString;
+import lombok.*;
+
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -16,6 +15,12 @@ public class Customer {
     private User user;
 
     private LocalDate birthDate;
+
+    private List<Address> addresses;
+    private Address selectedAddress;
+
+    private Double currentLatitude;
+    private Double currentLongitude;
 
     @Override
     public String toString() {

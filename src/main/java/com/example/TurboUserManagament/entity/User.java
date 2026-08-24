@@ -3,28 +3,27 @@ package com.example.TurboUserManagament.entity;
 import com.example.TurboUserManagament.appenum.UserRole;
 import java.time.LocalDateTime;
 import java.util.List;
-import lombok.Data;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+
+import com.example.TurboUserManagament.record.PhoneNumber;
+import lombok.*;
 
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString(onlyExplicitlyIncluded = true)
 //@Entity
-public abstract class User {
+public class User {
     private Long id;
     private String firstName;
     private String lastName;
-    private String phoneNumber;
+    private PhoneNumber phoneNumber;
     private UserRole role;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
     private AuthenticationAccount authenticationAccount;
 
-    private List<Address> addresses;
 
     @Override
     public String toString() {
@@ -36,9 +35,7 @@ public abstract class User {
                 ", role=" + role +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
-                ", phoneVerification=" + phoneVerification +
                 ", authenticationAccount=" + authenticationAccount +
-                ", addresses=" + addresses +
                 '}';
     }
 }

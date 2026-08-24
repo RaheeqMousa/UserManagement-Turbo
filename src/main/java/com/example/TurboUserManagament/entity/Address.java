@@ -1,5 +1,6 @@
 package com.example.TurboUserManagament.entity;
 
+import com.example.TurboUserManagament.appenum.AddressType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,11 +13,11 @@ import lombok.ToString;
 //@Entity
 public class Address {
     private Long id;
-    private Customer customer;
     private String city;
     private String street;
-    private double latitude;
-    private double longitude;
+    private Double latitude;
+    private Double longitude;
+    private AddressType addressType;
 
     @Override
     public String toString() {
@@ -26,7 +27,6 @@ public class Address {
                 ", street='" + street + '\'' +
                 ", latitude=" + latitude +
                 ", longitude=" + longitude +
-                ", customer ID=" + customer.getId() +
                 '}';
     }
 }

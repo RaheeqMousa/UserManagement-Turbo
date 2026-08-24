@@ -17,7 +17,7 @@ public class Vendor{
     private Long id;
     private User user;
 
-    private double AvgReview;
+    private double averageReview;
     private String placeName;
     private VendorType vendorType;
 

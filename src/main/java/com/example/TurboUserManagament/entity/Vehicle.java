@@ -1,20 +1,19 @@
 package com.example.TurboUserManagament.entity;
 
-import lombok.Data;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString(onlyExplicitlyIncluded = true)
 //@Entity
 @Data
+@Builder
 public class Vehicle {
     private Long id;
-    private User user;
+    private Driver driver;
+
     private String model;
     private String type;
-
-    private Driver driver;
+    private String color;
+    private String plateNumber;
 }

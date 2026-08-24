@@ -1,14 +1,13 @@
 package com.example.TurboUserManagament.entity;
 
 import com.example.TurboUserManagament.appenum.AccountStatus;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import com.example.TurboUserManagament.record.Password;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString(onlyExplicitlyIncluded = true)
@@ -16,10 +15,10 @@ import java.time.LocalDateTime;
 public class AuthenticationAccount {
     private Long id;
     private User user;
-    private String hashedPassword;
+    private Password password;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private AccountStatus isActive;
+    private AccountStatus status;
 
     private PhoneVerification phoneVerification;
 
@@ -28,10 +27,10 @@ public class AuthenticationAccount {
         return "AuthenticationAccount{" +
                 "id=" + id +
                 ", user ID=" + user.getId() +
-                ", hashedPassword='" + hashedPassword + '\'' +
+                ", password='" + password + '\'' +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
-                ", isActive=" + isActive +
+                ", status=" + status +
                 '}';
     }
 }

@@ -1,15 +1,12 @@
 package com.example.TurboUserManagament.entity;
 
 import com.example.TurboUserManagament.appenum.PhoneVerificationStatus;
-import lombok.Data;
+import lombok.*;
 
 import java.time.LocalDateTime;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
 
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString(onlyExplicitlyIncluded = true)
@@ -17,9 +14,10 @@ import lombok.ToString;
 public class PhoneVerification {
     private Long id;
     private User user;
-    private String hashedOTP;
+    private String otp;
     private LocalDateTime expiryDate;
     private LocalDateTime createdAt;
+    private LocalDateTime verifiedAt;
     private PhoneVerificationStatus status;
 
     @Override
@@ -27,7 +25,7 @@ public class PhoneVerification {
         return "PhoneVerification{" +
                 "id=" + id +
                 ", user ID=" + user.getId() +
-                ", hashedOTP='" + hashedOTP + '\'' +
+                ", OTP='" + otp + '\'' +
                 ", expiryDate=" + expiryDate +
                 ", createdAt=" + createdAt +
                 ", status=" + status +
