@@ -74,16 +74,20 @@ public class CustomerService {
             return customer.getSelectedAddress();
         }
 
-        if(customer.getCurrentLatitude()==null || customer.getCurrentLatitude()==null){
+        if(customer.getCurrentLatitude()==null || customer.getCurrentLongitude()==null){
             throw new NotAvailableCustomerLocationException("customer has no selected address or current location");
         }
 
-        Address currentLocation = new Address();
-
-        currentLocation.setLatitude(customer.getCurrentLatitude());
-        currentLocation.setLongitude(customer.getCurrentLongitude());
+        Address currentLocation = Address.builder()
+                        .latitude(customer.getCurrentLatitude())
+                        .longitude(customer.getCurrentLongitude())
+                        .build();
 
         return currentLocation;
+    }
+
+    public Address selectAddress(){
+        return null;
     }
 
 }

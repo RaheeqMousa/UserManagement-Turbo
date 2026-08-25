@@ -1,12 +1,10 @@
 package com.example.TurboUserManagament.entity;
 
 import com.example.TurboUserManagament.appenum.AddressType;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString(onlyExplicitlyIncluded = true)

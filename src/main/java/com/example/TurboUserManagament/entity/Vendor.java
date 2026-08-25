@@ -1,14 +1,12 @@
 package com.example.TurboUserManagament.entity;
 
 import com.example.TurboUserManagament.appenum.VendorType;
-import lombok.Data;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 import java.time.LocalDate;
 
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString(onlyExplicitlyIncluded = true)
@@ -17,11 +15,12 @@ public class Vendor{
     private Long id;
     private User user;
 
+    private String identityNumber;
     private double averageReview;
-    private String placeName;
+    private String businessName;
     private VendorType vendorType;
 
-    private Address address;
+    private Address businessAddress;
 
     private LocalDate createdAt;
     private LocalDate updatedAt;

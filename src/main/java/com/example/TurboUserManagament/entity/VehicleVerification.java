@@ -1,10 +1,7 @@
 package com.example.TurboUserManagament.entity;
 
 import com.example.TurboUserManagament.appenum.VehicleVerificationStatus;
-import lombok.Data;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 import java.time.LocalDate;
 
@@ -13,6 +10,7 @@ import java.time.LocalDate;
 @ToString(onlyExplicitlyIncluded = true)
 //@Entity
 @Data
+@Builder
 public class VehicleVerification {
     private Long id;
     private Vehicle vehicle;
@@ -20,4 +18,5 @@ public class VehicleVerification {
     private LocalDate uploadedAt;
     private LocalDate verifiedAt;
     private VehicleVerificationStatus vehicleVerificationStatus;
+    private String rejectionReason;
 }

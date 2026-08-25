@@ -5,6 +5,7 @@ import com.example.TurboUserManagament.appenum.VehicleVerificationStatus;
 import com.example.TurboUserManagament.entity.*;
 import com.example.TurboUserManagament.exception.DriverAlreadyExistException;
 import com.example.TurboUserManagament.record.DriverRegistration;
+import com.example.TurboUserManagament.record.VehicleRegistration;
 import com.example.TurboUserManagament.repository.DriverRepository;
 import com.example.TurboUserManagament.repository.UserRepository;
 
@@ -18,30 +19,44 @@ public class DriverService {
     private DriverRepository driverRepository;
     private AuthenticationService authenticationService;
     private UserRepository userRepository;
+    private VehicleService vehicleService;
+    private VehicleVerificationService vehicleVerificationService;
 
     public DriverService(AuthenticationService  authService,
                          DriverRepository driverRepository,
-                         UserRepository userRepository){
+                         UserRepository userRepository,
+                         VehicleService vehicleService,
+                         VehicleVerificationService vehicleVerificationService){
         this.authenticationService= authService;
         this.driverRepository= driverRepository;
         this.userRepository=userRepository;
+        this.vehicleService=vehicleService;
+        this.vehicleVerificationService=vehicleVerificationService;
     }
 
-    public Driver registerDriver(DriverRegistration registration){
-        User user= userRepository.findByPhoneNumber(registration.phoneNumber());
+    public Driver getDriver(Long driverId){
+        Driver driver= driverRepository.findByID(driverId);
+        if (driver == null) {
+            throw new IllegalArgumentException("Vehicle verification not found");
+        }
+        return driver;
+    }
+
+    public Driver registerDriver(DriverRegistration driverRegistration){
+        User user= userRepository.findByPhoneNumber(driverRegistration.phoneNumber());
 
         if(user==null) {
             //create the user
             user = User.builder()
-                    .firstName(registration.firstName())
-                    .lastName(registration.lastName())
-                    .phoneNumber(registration.phoneNumber())
+                    .firstName(driverRegistration.firstName())
+                    .lastName(driverRegistration.lastName())
+                    .phoneNumber(driverRegistration.phoneNumber())
                     .role(UserRole.DRIVER)
                     .createdAt(LocalDateTime.now())
                     .updatedAt(LocalDateTime.now())
                     .build();
             //create the authentication accoutn
-            AuthenticationAccount authenticationAccount= authenticationService.register(user, registration.password());
+            AuthenticationAccount authenticationAccount= authenticationService.register(user, driverRegistration.password());
             user.setAuthenticationAccount(authenticationAccount);
         }
 
@@ -54,32 +69,42 @@ public class DriverService {
         //create the driver
         Driver driver = Driver.builder()
                 .user(user)
-                .identityNumber(registration.identityNumber())
-                .licenseNumber(registration.licenseNumber())
-                .licenseExpiryDate(registration.licenseExpiryDate())
+                .identityNumber(driverRegistration.identityNumber())
+                .licenseNumber(driverRegistration.licenseNumber())
+                .licenseExpiryDate(driverRegistration.licenseExpiryDate())
                 .build();
 
         //create vehicle
-        Vehicle vehicle=Vehicle.builder()
-                .driver(driver)
-                .model(registration.vehicleModel())
-                .type(registration.vehicleType())
-                .color(registration.vehicleColor())
-                .plateNumber(registration.vehiclePlateNumber())
-                .build();
-        driver.setVehicles(new ArrayList<>(List.of(vehicle)));
+        VehicleRegistration vehicleRegistration=new VehicleRegistration(
+                driverRegistration.vehicleModel(),
+                driverRegistration.vehicleType(),
+                driverRegistration.vehicleColor(),
+                driverRegistration.vehiclePlateNumber()
+        );
+        Vehicle vehicle= vehicleService.addVehicle(driver, vehicleRegistration);
 
         //enter verification for the vehicle
-        VehicleVerification verification=new VehicleVerification();
-        verification.setVehicle(vehicle);
-        verification.setFileURL(
-                registration.verificationFileURL()
-        );
-        verification.setUploadedAt(LocalDate.now());
-        verification.setVehicleVerificationStatus(
-                VehicleVerificationStatus.PENDING
-        );
+        vehicleVerificationService.submitVerification(vehicle, driverRegistration.verificationFileURL());
+
         return driverRepository.save(driver);
+    }
+
+    public boolean isDriverApproved(Long driverId){
+        Driver driver=getDriver(driverId);
+        List<Vehicle> driverVehicles=driver.getVehicles();
+
+        if(driverVehicles==null || driverVehicles.isEmpty()){
+            return false;
+        }
+
+        for(short i=0;i<driverVehicles.size();i++){
+            Vehicle vehicle=driverVehicles.get(i);
+            if(vehicleService.isVehicleActive(vehicle.getId())){
+                return true;
+            }
+        }
+
+        return false;
     }
 
 }

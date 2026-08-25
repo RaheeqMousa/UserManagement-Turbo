@@ -27,8 +27,8 @@ public class Driver{
 
     private List<Vehicle> vehicles;
 
-    private double latitude;
-    private double longitude;
+    private Double latitude;
+    private Double longitude;
     private LocalDateTime lastLocationUpdate;
 
     @Override

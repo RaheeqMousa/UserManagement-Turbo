@@ -17,67 +17,45 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> handleException(Exception ex){
-        String exceptionMessage= "Exception from Raheeq's app: "+ex.getMessage()+
-                                    "\nException Stack Trace\n"+exceptionStackTrace(ex);
-
-        slackNotifier.send(exceptionMessage);
-        return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(exceptionMessage);
+        return getResponse(ex, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<String> handleUserNotFound(UserNotFoundException ex){
-        String exceptionMessage= "Exception from Raheeq's app: "+ex.getMessage()+
-                                    "\nException Stack Trace\n"+exceptionStackTrace(ex);
-
-        slackNotifier.send(exceptionMessage);
-        return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(exceptionMessage);
+        return getResponse(ex, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(UserAlreadyExistException.class)
     public ResponseEntity<String> handleUserAlreadyExist(UserAlreadyExistException ex){
-        String exceptionMessage= "Exception from Raheeq's app: "+ex.getMessage()+
-                                    "\nException Stack Trace\n"+exceptionStackTrace(ex);
-
-        slackNotifier.send(exceptionMessage);
-        return ResponseEntity
-                .status(HttpStatus.CONFLICT)
-                .body(exceptionMessage);
+        return getResponse(ex, HttpStatus.CONFLICT);
     }
 
     @ExceptionHandler(NotAvailableCustomerLocationException.class)
     public ResponseEntity<String> handleNotAvailableCustomerLocation(NotAvailableCustomerLocationException ex){
-        String exceptionMessage= "Exception from Raheeq's app: "+ex.getMessage()+
-                "\nException Stack Trace\n"+exceptionStackTrace(ex);
-
-        slackNotifier.send(exceptionMessage);
-        return ResponseEntity
-                .status(HttpStatus.CONFLICT)
-                .body(exceptionMessage);
+        return getResponse(ex, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(CustomerAlreadyExistException.class)
     public ResponseEntity<String> handleCustomerAlreadyExist(CustomerAlreadyExistException ex){
-        String exceptionMessage= "Exception from Raheeq's app: "+ex.getMessage()+
-                "\nException Stack Trace\n"+exceptionStackTrace(ex);
-
-        slackNotifier.send(exceptionMessage);
-        return ResponseEntity
-                .status(HttpStatus.CONFLICT)
-                .body(exceptionMessage);
+        return getResponse(ex, HttpStatus.CONFLICT);
     }
 
     @ExceptionHandler(DriverAlreadyExistException.class)
     public ResponseEntity<String> handleDriverAlreadyExist(DriverAlreadyExistException ex){
+        return getResponse(ex, HttpStatus.CONFLICT);
+    }
+
+    public ResponseEntity<String> handleVendorAlreadyExist(VendorAlreadyExistException ex){
+        return getResponse(ex, HttpStatus.CONFLICT);
+    }
+
+    private ResponseEntity<String> getResponse(Exception ex, HttpStatus status){
         String exceptionMessage= "Exception from Raheeq's app: "+ex.getMessage()+
                 "\nException Stack Trace\n"+exceptionStackTrace(ex);
 
         slackNotifier.send(exceptionMessage);
         return ResponseEntity
-                .status(HttpStatus.CONFLICT)
+                .status(status)
                 .body(exceptionMessage);
     }
 

@@ -2,6 +2,8 @@ package com.example.TurboUserManagament.entity;
 
 import lombok.*;
 
+import java.util.List;
+
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString(onlyExplicitlyIncluded = true)
@@ -16,4 +18,6 @@ public class Vehicle {
     private String type;
     private String color;
     private String plateNumber;
+
+    private List<VehicleVerification> verifications;
 }
