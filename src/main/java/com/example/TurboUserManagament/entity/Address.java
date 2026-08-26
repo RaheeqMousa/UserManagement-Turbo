@@ -1,20 +1,26 @@
 package com.example.TurboUserManagament.entity;
 
 import com.example.TurboUserManagament.appenum.AddressType;
+import jakarta.persistence.*;
 import lombok.*;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString(onlyExplicitlyIncluded = true)
-//@Entity
+@Entity
 public class Address {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private String city;
     private String street;
     private Double latitude;
     private Double longitude;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name="address_type")
     private AddressType addressType;
 
     @Override

@@ -1,5 +1,8 @@
 package com.example.TurboUserManagament.record;
 
+import jakarta.persistence.Embeddable;
+
+@Embeddable
 public record Password(String value) {
     public Password{
         if(value==null || value.trim().isEmpty()){

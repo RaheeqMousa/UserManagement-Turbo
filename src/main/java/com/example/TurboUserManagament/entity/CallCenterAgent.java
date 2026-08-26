@@ -1,17 +1,20 @@
 package com.example.TurboUserManagament.entity;
 
-import lombok.Data;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import jakarta.persistence.*;
+import lombok.*;
 
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString(onlyExplicitlyIncluded = true)
-//@Entity
+@Entity
 public class CallCenterAgent {
+    @Id
+    @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Long id;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", unique = true, nullable = false)
     private User user;
 
     @Override

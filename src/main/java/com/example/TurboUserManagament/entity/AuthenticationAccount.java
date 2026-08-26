@@ -1,7 +1,9 @@
 package com.example.TurboUserManagament.entity;
 
 import com.example.TurboUserManagament.appenum.AccountStatus;
+import com.example.TurboUserManagament.converter.PasswordConverter;
 import com.example.TurboUserManagament.record.Password;
+import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -10,24 +12,32 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString(onlyExplicitlyIncluded = true)
-//@Entity
+@Entity
 public class AuthenticationAccount {
+    @Id
+    @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Long id;
-    private User user;
-    private Password password;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
-    private AccountStatus status;
 
-    private PhoneVerification phoneVerification;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false, unique = true)
+    private User user;
+
+    @Convert(converter = PasswordConverter.class)
+    private Password password;
+
+    @Column(name="created_at")
+    private LocalDateTime createdAt;
+
+    @Column(name="updated_at")
+    private LocalDateTime updatedAt;
+
+    @Enumerated(EnumType.STRING)
+    private AccountStatus status;
 
     @Override
     public String toString() {
         return "AuthenticationAccount{" +
                 "id=" + id +
-                ", user ID=" + user.getId() +
-                ", password='" + password + '\'' +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
                 ", status=" + status +

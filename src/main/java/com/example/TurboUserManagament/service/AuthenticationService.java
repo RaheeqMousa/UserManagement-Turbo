@@ -1,18 +1,22 @@
 package com.example.TurboUserManagament.service;
 
 import com.example.TurboUserManagament.appenum.AccountStatus;
+import com.example.TurboUserManagament.appenum.PhoneVerificationStatus;
 import com.example.TurboUserManagament.entity.AuthenticationAccount;
 import com.example.TurboUserManagament.entity.User;
 import com.example.TurboUserManagament.record.Password;
+import com.example.TurboUserManagament.record.PhoneNumber;
 import com.example.TurboUserManagament.repository.AuthenticationRepository;
+import com.example.TurboUserManagament.repository.UserRepository;
 
 import java.time.LocalDateTime;
 
 public class AuthenticationService {
 
-
     private OTPService otpService;
     private AuthenticationRepository authenticationRepository;
+    private UserRepository userRepository;
+
     public AuthenticationService(OTPService otpService,
                                  AuthenticationRepository authenticationRepository){
         this.otpService=otpService;
@@ -33,7 +37,7 @@ public class AuthenticationService {
         return authenticationRepository.save(account);
     }
 
-    public User login(String phoneNumber, String password){
+    public User login(PhoneNumber phoneNumber, String password){
         //find account with that phoneNumber
         //check whether the phone number is verified or not
         //verify password
@@ -45,6 +49,7 @@ public class AuthenticationService {
         //verify if the old password is correct
         //checks the new password against constraints
         //update password
+
     }
 
     public void deactivateAccount(User user){

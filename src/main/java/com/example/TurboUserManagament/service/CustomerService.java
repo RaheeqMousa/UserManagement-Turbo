@@ -86,8 +86,4 @@ public class CustomerService {
         return currentLocation;
     }
 
-    public Address selectAddress(){
-        return null;
-    }
-
 }

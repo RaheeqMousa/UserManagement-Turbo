@@ -1,5 +1,8 @@
 package com.example.TurboUserManagament.record;
 
+import jakarta.persistence.Embeddable;
+
+@Embeddable
 public record PhoneNumber(String value) {
     public PhoneNumber{
         if(value==null || value.trim().isEmpty()){
