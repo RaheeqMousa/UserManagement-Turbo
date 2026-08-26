@@ -6,7 +6,7 @@ public record CustomerRegistration(
         String firstName,
         String lastName,
         PhoneNumber phoneNumber,
-        Password password,
+        String password,
         LocalDate birthDate
 ) {
 }

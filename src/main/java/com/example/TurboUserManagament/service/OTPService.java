@@ -39,7 +39,21 @@ public class OTPService {
         //check whether the otp expired or not
         //verify verification
         //mark phone as verified if otp is correct
-        return false;
+        PhoneVerification phoneVerification= user.getPhoneVerifications()
+                                                .getLast();
+        if(phoneVerification.getStatus()==PhoneVerificationStatus.VERIFIED){
+            return false;
+        }
+        if(phoneVerification.getStatus()==PhoneVerificationStatus.EXPIRED){
+            return false;
+        }
+        if(!phoneVerification.getOtp().equalsIgnoreCase(OTP)){
+            return false;
+        }
+        phoneVerification.setStatus(PhoneVerificationStatus.VERIFIED);
+        phoneVerification.setVerifiedAt(LocalDateTime.now());
+        phoneVerificationRepository.save(phoneVerification);
+        return true;
     }
 
     public void resendOTP(User user){

@@ -6,7 +6,7 @@ public record DriverRegistration(
         String firstName,
         String lastName,
         PhoneNumber phoneNumber,
-        Password password,
+        String password,
 
         String identityNumber,
         String licenseNumber,

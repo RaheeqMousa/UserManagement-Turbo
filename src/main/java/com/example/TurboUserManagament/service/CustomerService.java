@@ -38,6 +38,7 @@ public class CustomerService {
                     .createdAt(LocalDateTime.now())
                     .updatedAt(LocalDateTime.now())
                     .build();
+            user = userRepository.save(user);
             authenticationService.register(user, registration.password());
         }
 

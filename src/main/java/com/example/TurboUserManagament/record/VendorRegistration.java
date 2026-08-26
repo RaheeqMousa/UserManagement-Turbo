@@ -8,7 +8,7 @@ public record VendorRegistration(
         String firstName,
         String lastName,
         PhoneNumber phoneNumber,
-        Password password,
+        String password,
 
         String identityNumber,
 
