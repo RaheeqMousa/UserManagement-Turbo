@@ -1,5 +1,6 @@
 package com.example.TurboUserManagament.service;
 
+import com.example.TurboUserManagament.appenum.DriverStatus;
 import com.example.TurboUserManagament.appenum.UserRole;
 import com.example.TurboUserManagament.appenum.VehicleVerificationStatus;
 import com.example.TurboUserManagament.entity.*;
@@ -91,20 +92,7 @@ public class DriverService {
 
     public boolean isDriverApproved(Long driverId){
         Driver driver=getDriver(driverId);
-        List<Vehicle> driverVehicles=driver.getVehicles();
-
-        if(driverVehicles==null || driverVehicles.isEmpty()){
-            return false;
-        }
-
-        for(short i=0;i<driverVehicles.size();i++){
-            Vehicle vehicle=driverVehicles.get(i);
-            if(vehicleService.isVehicleActive(vehicle.getId())){
-                return true;
-            }
-        }
-
-        return false;
+        return driver.getDriverStatus()== DriverStatus.APPROVED;
     }
 
 }
