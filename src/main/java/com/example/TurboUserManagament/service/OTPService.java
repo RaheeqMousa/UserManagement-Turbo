@@ -5,16 +5,19 @@ import com.example.TurboUserManagament.entity.PhoneVerification;
 import com.example.TurboUserManagament.entity.User;
 import com.example.TurboUserManagament.record.PhoneNumber;
 import com.example.TurboUserManagament.repository.PhoneVerificationRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
 import java.util.Random;
 
 public class OTPService {
 
-    private PhoneVerificationRepository phoneVerificationRepository;
+    private final PhoneVerificationRepository phoneVerificationRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public OTPService(PhoneVerificationRepository phoneVerificationRepository){
+    public OTPService(PhoneVerificationRepository phoneVerificationRepository, PasswordEncoder passwordEncoder){
         this.phoneVerificationRepository=phoneVerificationRepository;
+        this.passwordEncoder=passwordEncoder;
     }
 
     public PhoneVerification sendOTP(User user){
@@ -28,6 +31,7 @@ public class OTPService {
                 .expiryDate(LocalDateTime.now().plusMinutes(5))
                 .status(PhoneVerificationStatus.PENDING)
                 .build();
+        user.getPhoneVerifications().add(phoneVerification);
 
         sendSMS(user.getPhoneNumber(), otp);
         return phoneVerificationRepository.save(phoneVerification);
@@ -47,7 +51,7 @@ public class OTPService {
         if(phoneVerification.getStatus()==PhoneVerificationStatus.EXPIRED){
             return false;
         }
-        if(!phoneVerification.getOtp().equalsIgnoreCase(OTP)){
+        if(!phoneVerification.getOtp().equalsIgnoreCase(hashOTP(OTP))){
             return false;
         }
         phoneVerification.setStatus(PhoneVerificationStatus.VERIFIED);
@@ -60,6 +64,30 @@ public class OTPService {
         //invalidate the old OTP status
         //generate new otp
         //sends new otp
+        boolean verified=user.getPhoneVerifications()
+                .stream()
+                .anyMatch(pv->
+                            pv.getStatus()==PhoneVerificationStatus.VERIFIED);
+        if(verified){
+            throw new IllegalArgumentException("Phone already verified");
+        }
+        PhoneVerification lastVerification=user.getPhoneVerifications().getLast();
+        lastVerification.setStatus(PhoneVerificationStatus.EXPIRED);
+        phoneVerificationRepository.save(lastVerification);
+
+        String otp= generateOTP();
+        String hashedOTP= hashOTP(otp);
+
+        PhoneVerification phoneVerification= PhoneVerification.builder()
+                .user(user)
+                .otp(hashedOTP)
+                .createdAt(LocalDateTime.now())
+                .expiryDate(LocalDateTime.now().plusMinutes(5))
+                .status(PhoneVerificationStatus.PENDING)
+                .build();
+        user.getPhoneVerifications().add(phoneVerification);
+
+        phoneVerificationRepository.save(phoneVerification);
     }
 
     private String generateOTP(){
@@ -69,7 +97,7 @@ public class OTPService {
     }
 
     private String hashOTP(String otp){
-        return "";
+        return passwordEncoder.encode(otp);
     }
 
     private void sendSMS(PhoneNumber phone, String otp){

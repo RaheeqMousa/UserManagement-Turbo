@@ -2,7 +2,7 @@ package com.example.TurboUserManagament.appenum;
 
 public enum UserRole {
     CUSTOMER,
-    RESTAURANT,
+    VENDOR,
     DRIVER,
     ADMIN,
     CALL_CENTER_AGENT

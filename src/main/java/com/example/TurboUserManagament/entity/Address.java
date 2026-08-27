@@ -1,5 +1,6 @@
 package com.example.TurboUserManagament.entity;
 
+import com.example.TurboUserManagament.appenum.AddressStatus;
 import com.example.TurboUserManagament.appenum.AddressType;
 import jakarta.persistence.*;
 import lombok.*;
@@ -22,6 +23,8 @@ public class Address {
     @Enumerated(EnumType.STRING)
     @Column(name="address_type")
     private AddressType addressType;
+
+    private AddressStatus status;
 
     @Override
     public String toString() {

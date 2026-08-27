@@ -11,12 +11,13 @@ import com.example.TurboUserManagament.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 public class AuthenticationService {
 
-    private OTPService otpService;
-    private AuthenticationRepository authenticationRepository;
-    private UserRepository userRepository;
+    private final OTPService otpService;
+    private final AuthenticationRepository authenticationRepository;
+    private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
     public AuthenticationService(OTPService otpService,
@@ -105,8 +106,18 @@ public class AuthenticationService {
         authenticationRepository.save(authenticationAccount);
     }
 
+    public void activateAccount(User user){
+        AuthenticationAccount authenticationAccount= user
+                .getAuthenticationAccount();
+        if(authenticationAccount==null){
+            throw new IllegalArgumentException("Authentication Account is not found");
+        }
+        authenticationAccount.setStatus(AccountStatus.ACTIVE);
+        authenticationAccount.setUpdatedAt(LocalDateTime.now());
+        authenticationRepository.save(authenticationAccount);
+    }
+
     public void deactivateAccount(User user){
-        //If someone wants to delete their account, we will deactviate it (soft delete)
         AuthenticationAccount authenticationAccount= user
                 .getAuthenticationAccount();
         if(authenticationAccount==null){
@@ -117,7 +128,7 @@ public class AuthenticationService {
         authenticationRepository.save(authenticationAccount);
     }
 
-    public void deleteAccount(User user){
+    public void deleteAccount(User user){ //soft delete
         AuthenticationAccount authenticationAccount= user
                 .getAuthenticationAccount();
         if(authenticationAccount==null){

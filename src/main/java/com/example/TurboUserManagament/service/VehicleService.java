@@ -1,5 +1,6 @@
 package com.example.TurboUserManagament.service;
 
+import com.example.TurboUserManagament.appenum.VehicleStatus;
 import com.example.TurboUserManagament.appenum.VehicleVerificationStatus;
 import com.example.TurboUserManagament.entity.Driver;
 import com.example.TurboUserManagament.entity.Vehicle;
@@ -43,9 +44,21 @@ public class VehicleService {
         return vehicleRepository.save(vehicle);
     }
 
-    public void deleteVehicle(){
+    public Vehicle updateVehicle(Long vehicleId, Vehicle updatedVehicle) {
+        Vehicle vehicle = getVehicle(vehicleId);
 
+        vehicle.setModel(updatedVehicle.getModel());
+        vehicle.setType(updatedVehicle.getType());
+        vehicle.setColor(updatedVehicle.getColor());
+        vehicle.setPlateNumber(updatedVehicle.getPlateNumber());
 
+        return vehicleRepository.save(vehicle);
+    }
+
+    public void deleteVehicle(Long vehcileId){
+        Vehicle vehicle=getVehicle(vehcileId);
+        vehicle.setStatus(VehicleStatus.DELETED);
+        vehicleRepository.save(vehicle);
     }
 
     public boolean isVehicleActive(Long vehicleId){
@@ -64,4 +77,11 @@ public class VehicleService {
         return vehicleVerification.getVehicleVerificationStatus()== VehicleVerificationStatus.APPROVED;
     }
 
+    public List<Vehicle> getDriverVehicles(Long driverId){
+        List<Vehicle> vehicles= vehicleRepository.findByDriverId(driverId);
+        if(vehicles==null|| vehicles.isEmpty()){
+            return List.of();
+        }
+        return vehicles;
+    }
 }

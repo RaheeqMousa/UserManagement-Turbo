@@ -1,16 +1,19 @@
 package com.example.TurboUserManagament.service;
 
+import com.example.TurboUserManagament.appenum.AccountStatus;
 import com.example.TurboUserManagament.appenum.AddressType;
+import com.example.TurboUserManagament.appenum.UserRole;
+import com.example.TurboUserManagament.appenum.VendorType;
 import com.example.TurboUserManagament.entity.Address;
 import com.example.TurboUserManagament.entity.AuthenticationAccount;
 import com.example.TurboUserManagament.entity.User;
 import com.example.TurboUserManagament.entity.Vendor;
+import com.example.TurboUserManagament.exception.UserAlreadyExistException;
+import com.example.TurboUserManagament.exception.UserNotFoundException;
 import com.example.TurboUserManagament.exception.VendorAlreadyExistException;
 import com.example.TurboUserManagament.record.VendorRegistration;
 import com.example.TurboUserManagament.repository.UserRepository;
 import com.example.TurboUserManagament.repository.VendorRepository;
-
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public class VendorService {
@@ -27,6 +30,14 @@ public class VendorService {
         this.authenticationService=authenticationService;
     }
 
+    public Vendor getVendor(Long id){
+        Vendor vendor= vendorRepository.findById(id);
+        if(vendor==null){
+            throw new IllegalArgumentException("Vendor is not found");
+        }
+        return vendor;
+    }
+
     public Vendor registerVendor(VendorRegistration vendorRegistration){
         User user= userRepository.findByPhoneNumber(vendorRegistration.phoneNumber());
         if(user==null){
@@ -34,6 +45,7 @@ public class VendorService {
                     .firstName(vendorRegistration.firstName())
                     .lastName(vendorRegistration.lastName())
                     .phoneNumber(vendorRegistration.phoneNumber())
+                    .role(UserRole.VENDOR)
                     .createdAt(LocalDateTime.now())
                     .updatedAt(LocalDateTime.now())
                     .build();
@@ -58,6 +70,34 @@ public class VendorService {
                 .businessName(vendorRegistration.placeName())
                 .build();
         return vendorRepository.save(vendor);
+    }
+
+    public Vendor updateVendor(Long vendorId, Vendor updatedVendor){
+        Vendor existingVendor= vendorRepository.findById(vendorId);
+        User existingUser = existingVendor.getUser();
+        User updatedUser = updatedVendor.getUser();
+        User userWithPhone= userRepository.findByPhoneNumber(updatedUser.getPhoneNumber());
+
+        if(userWithPhone.getAuthenticationAccount().getStatus()== AccountStatus.DELETED ||
+                userWithPhone.getAuthenticationAccount().getStatus()== AccountStatus.DEACTIVATE){
+            throw new UserNotFoundException("User with this ID is not avaialable");
+        }
+        if(userWithPhone.getId().equals(existingUser.getId())){
+            throw new UserAlreadyExistException(
+                    "Phone number already exists"
+            );
+        }
+
+        existingUser.setFirstName(updatedUser.getFirstName());
+        existingUser.setLastName(updatedUser.getLastName());
+        existingUser.setPhoneNumber(updatedUser.getPhoneNumber());
+
+        existingVendor.setBusinessAddress(updatedVendor.getBusinessAddress());
+        existingVendor.setAverageReview(updatedVendor.getAverageReview());
+        existingVendor.setVendorType(updatedVendor.getVendorType());
+
+        userRepository.save(existingUser);
+        return vendorRepository.save(existingVendor);
     }
 
 }

@@ -1,6 +1,7 @@
 package com.example.TurboUserManagament.service;
 
 import com.example.TurboUserManagament.appenum.DriverStatus;
+import com.example.TurboUserManagament.appenum.VehicleStatus;
 import com.example.TurboUserManagament.appenum.VehicleVerificationStatus;
 import com.example.TurboUserManagament.entity.Driver;
 import com.example.TurboUserManagament.entity.Vehicle;
@@ -17,11 +18,14 @@ public class VehicleVerificationService {
 
     private VehicleVerificationRepository vehicleVerificationRepository;
     private DriverRepository driverRepository;
+    private VehicleRepository vehicleRepository;
 
     public VehicleVerificationService(VehicleVerificationRepository vehicleVerificationRepository,
-                                      DriverRepository driverRepository){
+                                      DriverRepository driverRepository,
+                                      VehicleRepository vehicleRepository){
         this.vehicleVerificationRepository=vehicleVerificationRepository;
         this.driverRepository=driverRepository;
+        this.vehicleRepository=vehicleRepository;
     }
 
     public VehicleVerification getVehicleVerification(Long verificationId){
@@ -59,12 +63,14 @@ public class VehicleVerificationService {
 
         vehicleVerification.setVehicleVerificationStatus(VehicleVerificationStatus.APPROVED);
 
-        Driver driver = vehicleVerification
-                .getVehicle()
+        Vehicle vehicle= vehicleVerification
+                .getVehicle();
+        vehicle.setStatus(VehicleStatus.ACTIVE);
+        vehicleRepository.save(vehicle);
+
+        Driver driver = vehicle
                 .getDriver();
-
         driver.setDriverStatus(DriverStatus.APPROVED);
-
         driverRepository.save(driver);
 
         return vehicleVerificationRepository.save(vehicleVerification);

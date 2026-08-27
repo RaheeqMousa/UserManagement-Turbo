@@ -1,22 +1,26 @@
 package com.example.TurboUserManagament.service;
 
+import com.example.TurboUserManagament.appenum.AddressStatus;
 import com.example.TurboUserManagament.appenum.UserRole;
 import com.example.TurboUserManagament.entity.Address;
 import com.example.TurboUserManagament.entity.Customer;
 import com.example.TurboUserManagament.entity.User;
 import com.example.TurboUserManagament.exception.CustomerAlreadyExistException;
 import com.example.TurboUserManagament.exception.NotAvailableCustomerLocationException;
+import com.example.TurboUserManagament.exception.UserNotFoundException;
 import com.example.TurboUserManagament.record.CustomerRegistration;
 import com.example.TurboUserManagament.repository.CustomerRepository;
 import com.example.TurboUserManagament.repository.UserRepository;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Objects;
 
 public class CustomerService {
 
-    private AuthenticationService authenticationService;
-    private CustomerRepository customerRepository;
-    private UserRepository userRepository;
+    private final AuthenticationService authenticationService;
+    private final CustomerRepository customerRepository;
+    private final UserRepository userRepository;
 
     public CustomerService(AuthenticationService authenticationService,
                            CustomerRepository customerRepository,
@@ -24,6 +28,14 @@ public class CustomerService {
         this.authenticationService=authenticationService;
         this.customerRepository=customerRepository;
         this.userRepository=userRepository;
+    }
+
+    public Customer getCustomer(Long id){
+        Customer customer=customerRepository.findByID(id);
+        if(customer==null){
+            throw new UserNotFoundException("customer not found");
+        }
+        return customer;
     }
 
     public Customer registerCustomer(CustomerRegistration registration){
@@ -53,20 +65,29 @@ public class CustomerService {
         return customerRepository.save(customer);
     }
 
-    public void getCustomer(Long id){
+    public Customer updateCustomer(Long id,Customer updatedCustomer){
+        Customer existingCustomer=getCustomer(id);
 
-    }
+        existingCustomer.setBirthDate(updatedCustomer.getBirthDate());
+        existingCustomer.setCurrentLatitude(updatedCustomer.getCurrentLatitude());
+        existingCustomer.setCurrentLongitude(updatedCustomer.getCurrentLongitude());
 
-    public void updateCustomer(Customer customer){
-
+        return customerRepository.save(existingCustomer);
     }
 
     public void addAddress(Customer customer, Address address){
-
+        address.setStatus(AddressStatus.ACTIVE);
+        customer.getAddresses().add(address);
     }
 
     public void removeAddress(Customer customer, Long addressId){
-
+        List<Address> addresses=customer.getAddresses();
+        for(int i=0;i<addresses.size();i++){
+            Address address= addresses.get(i);
+            if(address.getId().equals(addressId)){
+                address.setStatus(AddressStatus.DELETED);
+            }
+        }
     }
 
     public Address getDeliveryAddress(Customer customer) {

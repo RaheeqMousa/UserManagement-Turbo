@@ -1,5 +1,6 @@
 package com.example.TurboUserManagament.entity;
 
+import com.example.TurboUserManagament.appenum.VehicleStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -26,6 +27,8 @@ public class Vehicle {
 
     @Column(name="plate_number")
     private String plateNumber;
+
+    private VehicleStatus status;
 
     @OneToMany(
             mappedBy = "vehicle",
