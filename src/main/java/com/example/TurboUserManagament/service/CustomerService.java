@@ -3,6 +3,7 @@ package com.example.TurboUserManagament.service;
 import com.example.TurboUserManagament.appenum.AddressStatus;
 import com.example.TurboUserManagament.appenum.UserRole;
 import com.example.TurboUserManagament.entity.Address;
+import com.example.TurboUserManagament.entity.AuthenticationAccount;
 import com.example.TurboUserManagament.entity.Customer;
 import com.example.TurboUserManagament.entity.User;
 import com.example.TurboUserManagament.exception.CustomerAlreadyExistException;
@@ -20,14 +21,14 @@ public class CustomerService {
 
     private final AuthenticationService authenticationService;
     private final CustomerRepository customerRepository;
-    private final UserRepository userRepository;
+    private final UserService userService;
 
     public CustomerService(AuthenticationService authenticationService,
                            CustomerRepository customerRepository,
-                           UserRepository userRepository){
+                           UserService userService){
         this.authenticationService=authenticationService;
         this.customerRepository=customerRepository;
-        this.userRepository=userRepository;
+        this.userService=userService;
     }
 
     public Customer getCustomer(Long id){
@@ -38,29 +39,22 @@ public class CustomerService {
         return customer;
     }
 
-    public Customer registerCustomer(CustomerRegistration registration){
-        User user= userRepository.findByPhoneNumber(registration.phoneNumber());
+    public Customer registerCustomer(User user, Customer customer, String rawPassword){
+        user.setRole(UserRole.CUSTOMER);
+        user.setCreatedAt(LocalDateTime.now());
+        user.setUpdatedAt(LocalDateTime.now());
 
-        if(user==null) {
-            user = User.builder()
-                    .firstName(registration.firstName())
-                    .lastName(registration.lastName())
-                    .phoneNumber(registration.phoneNumber())
-                    .role(UserRole.CUSTOMER)
-                    .createdAt(LocalDateTime.now())
-                    .updatedAt(LocalDateTime.now())
-                    .build();
-            user = userRepository.save(user);
-            authenticationService.register(user, registration.password());
-        }
+        User savedUser = userService.createUser(user);
 
-        if(customerRepository.findByID(user.getId())!=null){
-            throw new CustomerAlreadyExistException("Customer with this phone number already exist");
-        }
+        AuthenticationAccount account =
+                authenticationService.register(
+                        savedUser,
+                        rawPassword
+                );
 
-        Customer customer= new Customer();
-        customer.setUser(user);
-        customer.setBirthDate(registration.birthDate());
+        savedUser.setAuthenticationAccount(account);
+
+        customer.setUser(savedUser);
 
         return customerRepository.save(customer);
     }
@@ -91,7 +85,6 @@ public class CustomerService {
     }
 
     public Address getDeliveryAddress(Customer customer) {
-
         if (customer.getSelectedAddress() != null) {
             return customer.getSelectedAddress();
         }

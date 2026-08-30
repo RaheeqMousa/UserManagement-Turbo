@@ -5,19 +5,18 @@ import com.example.TurboUserManagament.entity.User;
 import com.example.TurboUserManagament.record.PhoneNumber;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
-public interface UserRepository {
-    User findById(Long id);
-    User save(User user);
-    User findByPhoneNumber(PhoneNumber number);
+public interface UserRepository extends JpaRepository<User, Long> {
 
-    ArrayList<User> getAll();
+    Optional<User> findByPhoneNumberAndDeletedFalse(PhoneNumber phoneNumber);
+
+    @EntityGraph(attributePaths = {"addresses"})
+    Optional<User> findByIdAndDeletedFalse(Long id);
 
     @Query("""
         select u
@@ -30,8 +29,9 @@ public interface UserRepository {
         and (:role is null or u.role=:role)
         """)
     Page<User> getUsers(@Param("firstName") String firstName,
-                            @Param("lastName") String lastName,
-                            @Param("phoneNumber") String phoneNumber,
-                            @Param("role") UserRole role,
-                            Pageable pageable);
+                        @Param("lastName") String lastName,
+                        @Param("phoneNumber") PhoneNumber phoneNumber,
+                        @Param("role") UserRole role,
+                        Pageable pageable);
+
 }

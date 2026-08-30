@@ -3,8 +3,7 @@ package com.example.TurboUserManagament.entity;
 import com.example.TurboUserManagament.appenum.VehicleVerificationStatus;
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 @Builder
@@ -24,10 +23,10 @@ public class VehicleVerification {
     private String fileURL;
 
     @Column(name="uploaded_at")
-    private LocalDate uploadedAt;
+    private LocalDateTime uploadedAt;
 
     @Column(name = "verified_at")
-    private LocalDate verifiedAt;
+    private LocalDateTime verifiedAt;
 
     @Enumerated(EnumType.STRING)
     @Column(name="vehicle_verification_status")

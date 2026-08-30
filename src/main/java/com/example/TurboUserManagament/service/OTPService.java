@@ -1,19 +1,20 @@
 package com.example.TurboUserManagament.service;
 
+import com.example.TurboUserManagament.appenum.AccountStatus;
 import com.example.TurboUserManagament.appenum.PhoneVerificationStatus;
 import com.example.TurboUserManagament.entity.PhoneVerification;
 import com.example.TurboUserManagament.entity.User;
 import com.example.TurboUserManagament.record.PhoneNumber;
 import com.example.TurboUserManagament.repository.PhoneVerificationRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
-import java.util.Random;
 
 public class OTPService {
 
     private final PhoneVerificationRepository phoneVerificationRepository;
     private final PasswordEncoder passwordEncoder;
+    private final SecureRandom secureRandom = new SecureRandom();
 
     public OTPService(PhoneVerificationRepository phoneVerificationRepository, PasswordEncoder passwordEncoder){
         this.phoneVerificationRepository=phoneVerificationRepository;
@@ -33,8 +34,9 @@ public class OTPService {
                 .build();
         user.getPhoneVerifications().add(phoneVerification);
 
+        PhoneVerification savedVerification= phoneVerificationRepository.save(phoneVerification);
         sendSMS(user.getPhoneNumber(), otp);
-        return phoneVerificationRepository.save(phoneVerification);
+        return savedVerification;
     }
 
     public boolean verifyOTP(String OTP, User user){
@@ -43,15 +45,20 @@ public class OTPService {
         //check whether the otp expired or not
         //verify verification
         //mark phone as verified if otp is correct
+        if(user.getPhoneVerifications().isEmpty()){
+            return false;
+        }
         PhoneVerification phoneVerification= user.getPhoneVerifications()
                                                 .getLast();
         if(phoneVerification.getStatus()==PhoneVerificationStatus.VERIFIED){
             return false;
         }
-        if(phoneVerification.getStatus()==PhoneVerificationStatus.EXPIRED){
+        if (LocalDateTime.now().isAfter(phoneVerification.getExpiryDate())) {
+            phoneVerification.setStatus(PhoneVerificationStatus.EXPIRED);
+            phoneVerificationRepository.save(phoneVerification);
             return false;
         }
-        if(!phoneVerification.getOtp().equalsIgnoreCase(hashOTP(OTP))){
+        if(!passwordEncoder.matches(OTP, phoneVerification.getOtp())){
             return false;
         }
         phoneVerification.setStatus(PhoneVerificationStatus.VERIFIED);
@@ -71,10 +78,12 @@ public class OTPService {
         if(verified){
             throw new IllegalArgumentException("Phone already verified");
         }
-        PhoneVerification lastVerification=user.getPhoneVerifications().getLast();
-        lastVerification.setStatus(PhoneVerificationStatus.EXPIRED);
-        phoneVerificationRepository.save(lastVerification);
+        if(!user.getPhoneVerifications().isEmpty()){
+            PhoneVerification lastVerification=user.getPhoneVerifications().getLast();
+            lastVerification.setStatus(PhoneVerificationStatus.EXPIRED);
+            phoneVerificationRepository.save(lastVerification);
 
+        }
         String otp= generateOTP();
         String hashedOTP= hashOTP(otp);
 
@@ -85,14 +94,15 @@ public class OTPService {
                 .expiryDate(LocalDateTime.now().plusMinutes(5))
                 .status(PhoneVerificationStatus.PENDING)
                 .build();
-        user.getPhoneVerifications().add(phoneVerification);
 
+        user.getPhoneVerifications().add(phoneVerification);
         phoneVerificationRepository.save(phoneVerification);
+        sendSMS(user.getPhoneNumber(), otp);
     }
 
     private String generateOTP(){
         return String.valueOf(
-          new Random().nextInt(900000)+100000
+          secureRandom.nextInt(900000)+100000
         );
     }
 

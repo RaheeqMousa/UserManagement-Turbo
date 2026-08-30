@@ -7,6 +7,7 @@ import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -35,8 +36,9 @@ public class Driver{
 
     @OneToMany(mappedBy = "driver",
         orphanRemoval = true,
-        cascade = CascadeType.ALL)
-    private List<Vehicle> vehicles;
+        cascade = CascadeType.ALL
+    )
+    private List<Vehicle> vehicles=new ArrayList<>();
 
     private Double latitude;
     private Double longitude;

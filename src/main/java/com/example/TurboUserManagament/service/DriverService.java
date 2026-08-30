@@ -21,18 +21,18 @@ public class DriverService {
 
     private final DriverRepository driverRepository;
     private final AuthenticationService authenticationService;
-    private final UserRepository userRepository;
+    private final UserService userService;
     private final VehicleService vehicleService;
     private final VehicleVerificationService vehicleVerificationService;
 
     public DriverService(AuthenticationService  authService,
                          DriverRepository driverRepository,
-                         UserRepository userRepository,
+                         UserService userService,
                          VehicleService vehicleService,
                          VehicleVerificationService vehicleVerificationService){
         this.authenticationService= authService;
         this.driverRepository= driverRepository;
-        this.userRepository=userRepository;
+        this.userService=userService;
         this.vehicleService=vehicleService;
         this.vehicleVerificationService=vehicleVerificationService;
     }
@@ -45,51 +45,36 @@ public class DriverService {
         return driver;
     }
 
-    public Driver registerDriver(DriverRegistration driverRegistration){
-        User user= userRepository.findByPhoneNumber(driverRegistration.phoneNumber());
+    public Driver registerDriver(User user,
+                                 Driver driver,
+                                 Vehicle vehicle,
+                                 String rawPassword,
+                                 String verificationURL){
+        // create user
+        user.setRole(UserRole.DRIVER);
+        user.setCreatedAt(LocalDateTime.now());
+        user.setUpdatedAt(LocalDateTime.now());
 
-        if(user==null) {
-            //create the user
-            user = User.builder()
-                    .firstName(driverRegistration.firstName())
-                    .lastName(driverRegistration.lastName())
-                    .phoneNumber(driverRegistration.phoneNumber())
-                    .role(UserRole.DRIVER)
-                    .createdAt(LocalDateTime.now())
-                    .updatedAt(LocalDateTime.now())
-                    .build();
-            //create the authentication accoutn
-            AuthenticationAccount authenticationAccount= authenticationService.register(user, driverRegistration.password());
-            user.setAuthenticationAccount(authenticationAccount);
-        }
+        User savedUser = userService.createUser(user);
 
-        if (driverRepository.findByID(user.getId())!=null) {
-            throw new DriverAlreadyExistException(
-                    "A driver profile already exists for this phone number"
-            );
-        }
+        // create authentication account
+        AuthenticationAccount account = authenticationService.register(savedUser, rawPassword);
+        savedUser.setAuthenticationAccount(account);
 
-        //create the driver
-        Driver driver = Driver.builder()
-                .user(user)
-                .identityNumber(driverRegistration.identityNumber())
-                .licenseNumber(driverRegistration.licenseNumber())
-                .licenseExpiryDate(driverRegistration.licenseExpiryDate())
-                .build();
+        // create driver
+        driver.setUser(savedUser);
+        Driver savedDriver = driverRepository.save(driver);
 
-        //create vehicle
-        VehicleRegistration vehicleRegistration=new VehicleRegistration(
-                driverRegistration.vehicleModel(),
-                driverRegistration.vehicleType(),
-                driverRegistration.vehicleColor(),
-                driverRegistration.vehiclePlateNumber()
+        // create vehicle
+        Vehicle savedVehicle = vehicleService.addVehicle(savedDriver, vehicle);
+
+        // submit vehicle verification
+        vehicleVerificationService.submitVerification(
+                savedVehicle,
+                verificationURL
         );
-        Vehicle vehicle= vehicleService.addVehicle(driver, vehicleRegistration);
 
-        //enter verification for the vehicle
-        vehicleVerificationService.submitVerification(vehicle, driverRegistration.verificationFileURL());
-
-        return driverRepository.save(driver);
+        return savedDriver;
     }
 
     public boolean isDriverApproved(Long driverId){
@@ -108,7 +93,7 @@ public class DriverService {
         User existingUser = existingDriver.getUser();
         User updatedUser= updatedDriver.getUser();
 
-        User userWithPhoneNumebr = userRepository.findByPhoneNumber(existingUser.getPhoneNumber());
+        User userWithPhoneNumebr = userService.getUserByPhoneNumber(existingUser.getPhoneNumber());
 
         if(userWithPhoneNumebr.getAuthenticationAccount().getStatus()== AccountStatus.DELETED){
             throw new UserNotFoundException("This driver has been deleted");
@@ -127,7 +112,7 @@ public class DriverService {
         existingDriver.setLicenseExpiryDate(updatedDriver.getLicenseExpiryDate());
         existingDriver.setLicenseNumber(updatedDriver.getLicenseNumber());
 
-        userRepository.save(existingUser);
+        userService.createUser(existingUser);
 
         return driverRepository.save(existingDriver);
     }

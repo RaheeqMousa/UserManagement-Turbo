@@ -1,11 +1,11 @@
 package com.example.TurboUserManagament.repository;
 
+import com.example.TurboUserManagament.entity.Vehicle;
 import com.example.TurboUserManagament.entity.VehicleVerification;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface VehicleVerificationRepository {
-    VehicleVerification save(
-            VehicleVerification verification
-    );
+import java.util.Optional;
 
-    VehicleVerification findById(Long id);
+public interface VehicleVerificationRepository extends JpaRepository<VehicleVerification, Long> {
+    Optional<VehicleVerification> findById(Long id);
 }

@@ -1,25 +1,31 @@
 package com.example.TurboUserManagament.service;
 
+import com.example.TurboUserManagament.appenum.UserRole;
 import com.example.TurboUserManagament.entity.CallCenterAgent;
-import com.example.TurboUserManagament.entity.User;
+import com.example.TurboUserManagament.exception.UserNotFoundException;
 import com.example.TurboUserManagament.repository.CallCenterRepository;
-
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public class CallCenterService {
 
     private final CallCenterRepository callCenterRepository;
+    private final UserService userService;
 
-    public CallCenterService(CallCenterRepository callCenterRepository){
+    public CallCenterService(CallCenterRepository callCenterRepository,
+                             UserService userService){
         this.callCenterRepository=callCenterRepository;
+        this.userService=userService;
     }
 
     public CallCenterAgent getCallCenterAgent(Long callCenterId){
-        return null;
-    }
+        CallCenterAgent agent = callCenterRepository.findByID(callCenterId);
 
-    public List<CallCenterAgent> getAgents(){
-        return null;
+        if (agent == null) {
+            throw new UserNotFoundException("Call center agent not found");
+        }
+
+        return agent;
     }
 
     public CallCenterAgent updateAgent(Long agentId, CallCenterAgent updatedAgent){

@@ -2,32 +2,30 @@ package com.example.TurboUserManagament.service;
 
 import com.example.TurboUserManagament.appenum.AccountStatus;
 import com.example.TurboUserManagament.appenum.PhoneVerificationStatus;
+import com.example.TurboUserManagament.converter.PhoneNumberConverter;
 import com.example.TurboUserManagament.entity.AuthenticationAccount;
 import com.example.TurboUserManagament.entity.User;
 import com.example.TurboUserManagament.record.Password;
 import com.example.TurboUserManagament.record.PhoneNumber;
 import com.example.TurboUserManagament.repository.AuthenticationRepository;
-import com.example.TurboUserManagament.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
 import java.time.LocalDateTime;
-import java.util.Optional;
 
 public class AuthenticationService {
 
     private final OTPService otpService;
     private final AuthenticationRepository authenticationRepository;
-    private final UserRepository userRepository;
+    private final UserService userService;
     private final PasswordEncoder passwordEncoder;
 
     public AuthenticationService(OTPService otpService,
                                  AuthenticationRepository authenticationRepository,
                                  PasswordEncoder passwordEncoder,
-                                 UserRepository userRepository){
+                                 UserService userService){
         this.otpService=otpService;
         this.authenticationRepository=authenticationRepository;
         this.passwordEncoder=passwordEncoder;
-        this.userRepository=userRepository;
+        this.userService=userService;
     }
 
     public AuthenticationAccount register(User user, String rawPassword){
@@ -39,12 +37,14 @@ public class AuthenticationService {
                 .password(hashedPassword)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
-                .status(AccountStatus.ACTIVE)
+                .status(AccountStatus.PENDING)
                 .build();
 
+        AuthenticationAccount savedAccount =
+                authenticationRepository.save(account);
         otpService.sendOTP(user);
-
-        return authenticationRepository.save(account);
+        //after otp verification activate account
+        return savedAccount;
     }
 
     public User login(PhoneNumber phoneNumber, String rawPassword){
@@ -52,19 +52,13 @@ public class AuthenticationService {
         //check whether the phone number is verified or not
         //verify password
         //check account status
-        User user= userRepository.findByPhoneNumber(phoneNumber);
-        if(user==null){
-            throw new IllegalArgumentException("Invalid phone number or password");
-        }
+        User user= userService.getUserByPhoneNumber(phoneNumber);
+
         AuthenticationAccount authenticationAccount= user.getAuthenticationAccount();
         if(authenticationAccount==null){
-            throw new IllegalArgumentException("Invalid phone numebr or password");
+            throw new IllegalArgumentException("Invalid phone number or password");
         }
-        boolean isPhoneVerified= user.getPhoneVerifications()
-                .stream()
-                .anyMatch(phoneVerification ->
-                        phoneVerification.getStatus()==PhoneVerificationStatus.VERIFIED);
-        if(!isPhoneVerified){
+        if(authenticationAccount.getStatus()!=AccountStatus.ACTIVE){
             throw new IllegalArgumentException("User with this phone number is not verified");
         }
         if (!passwordEncoder.matches(
@@ -74,10 +68,6 @@ public class AuthenticationService {
             throw new IllegalArgumentException(
                     "Invalid phone number or password"
             );
-        }
-
-        if(user.getAuthenticationAccount().getStatus()!= AccountStatus.ACTIVE){
-            throw new IllegalArgumentException("User account is not active");
         }
 
         return user;
@@ -106,9 +96,18 @@ public class AuthenticationService {
         authenticationRepository.save(authenticationAccount);
     }
 
-    public void activateAccount(User user){
-        AuthenticationAccount authenticationAccount= user
-                .getAuthenticationAccount();
+    public boolean verifyOTP(User user, String otp){
+        boolean verified= otpService.verifyOTP(otp,user);
+
+        if(!verified){
+            return false;
+        }
+        activateAccount(user.getAuthenticationAccount());
+
+        return true;
+    }
+
+    public void activateAccount(AuthenticationAccount authenticationAccount){
         if(authenticationAccount==null){
             throw new IllegalArgumentException("Authentication Account is not found");
         }
@@ -117,9 +116,7 @@ public class AuthenticationService {
         authenticationRepository.save(authenticationAccount);
     }
 
-    public void deactivateAccount(User user){
-        AuthenticationAccount authenticationAccount= user
-                .getAuthenticationAccount();
+    public void deactivateAccount(AuthenticationAccount authenticationAccount){
         if(authenticationAccount==null){
             throw new IllegalArgumentException("Authentication Account is not found");
         }
@@ -128,9 +125,7 @@ public class AuthenticationService {
         authenticationRepository.save(authenticationAccount);
     }
 
-    public void deleteAccount(User user){ //soft delete
-        AuthenticationAccount authenticationAccount= user
-                .getAuthenticationAccount();
+    public void deleteAccount(AuthenticationAccount authenticationAccount){ //soft delete
         if(authenticationAccount==null){
             throw new IllegalArgumentException("Authentication Account is not found");
         }

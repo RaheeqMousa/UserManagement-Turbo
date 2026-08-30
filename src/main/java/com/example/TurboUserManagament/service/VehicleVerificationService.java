@@ -9,16 +9,17 @@ import com.example.TurboUserManagament.entity.VehicleVerification;
 import com.example.TurboUserManagament.repository.DriverRepository;
 import com.example.TurboUserManagament.repository.VehicleRepository;
 import com.example.TurboUserManagament.repository.VehicleVerificationRepository;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Optional;
 
 public class VehicleVerificationService {
 
-    private VehicleVerificationRepository vehicleVerificationRepository;
-    private DriverRepository driverRepository;
-    private VehicleRepository vehicleRepository;
+    private final VehicleVerificationRepository vehicleVerificationRepository;
+    private final DriverRepository driverRepository;
+    private final VehicleRepository vehicleRepository;
 
     public VehicleVerificationService(VehicleVerificationRepository vehicleVerificationRepository,
                                       DriverRepository driverRepository,
@@ -29,20 +30,20 @@ public class VehicleVerificationService {
     }
 
     public VehicleVerification getVehicleVerification(Long verificationId){
-        VehicleVerification vehicleVerification= vehicleVerificationRepository.findById(verificationId);
-        if (vehicleVerification == null) {
+        Optional<VehicleVerification> vehicleVerification= vehicleVerificationRepository.findById(verificationId);
+        if (vehicleVerification.isEmpty()) {
             throw new IllegalArgumentException(
                     "Vehicle verification not found"
             );
         }
-        return vehicleVerification;
+        return vehicleVerification.get();
     }
 
-    public void submitVerification(Vehicle vehicle,
+    public VehicleVerification submitVerification(Vehicle vehicle,
                                                   String fileURL){
         VehicleVerification vehicleVerification= VehicleVerification.builder()
                 .fileURL(fileURL)
-                .uploadedAt(LocalDate.now())
+                .uploadedAt(LocalDateTime.now())
                 .vehicleVerificationStatus(VehicleVerificationStatus.PENDING)
                 .vehicle(vehicle)
                 .build();
@@ -51,10 +52,11 @@ public class VehicleVerificationService {
         }
         vehicle.getVerifications().add(vehicleVerification);
 
-        vehicleVerificationRepository.save(vehicleVerification);
+        return vehicleVerificationRepository.save(vehicleVerification);
     }
 
-    public VehicleVerification approveVehicle(Long verificationId){
+    @Transactional
+    public VehicleVerification approveVerification(Long verificationId){
         VehicleVerification vehicleVerification= getVehicleVerification(verificationId);
 
         if(vehicleVerification.getVehicleVerificationStatus()!=VehicleVerificationStatus.PENDING){
@@ -76,7 +78,7 @@ public class VehicleVerificationService {
         return vehicleVerificationRepository.save(vehicleVerification);
     }
 
-    public VehicleVerification rejectVehicle(Long verificationId, String rejectionReason){
+    public VehicleVerification rejectVerification(Long verificationId, String rejectionReason){
         VehicleVerification vehicleVerification= getVehicleVerification(verificationId);
 
         if(vehicleVerification.getVehicleVerificationStatus()!=VehicleVerificationStatus.PENDING){
@@ -88,6 +90,4 @@ public class VehicleVerificationService {
 
         return vehicleVerificationRepository.save(vehicleVerification);
     }
-
-
 }
